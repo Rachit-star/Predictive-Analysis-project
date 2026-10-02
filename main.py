@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 df = pd.read_csv('adult_merged.csv')
 
@@ -38,5 +39,17 @@ IQR = Q3 - Q1
 df = df[~((df[iqr_cols] < (Q1 - 1.5 * IQR)) | (df[iqr_cols] > (Q3 + 1.5 * IQR))).any(axis=1)]
 # OUTLIER REMOVAL END
 
+# STANDARDIZATION START
+scaler = StandardScaler()
+df[num_cols] = scaler.fit_transform(df[num_cols])
+# STANDARDIZATION END
+
 print(f"Shape: {df.shape}")
 print(df.head())
+
+plt.scatter(df['age'], df['hours-per-week'], alpha=0.5)
+plt.title('Age vs Hours-per-week (After Outlier Removal)')
+plt.xlabel('Age')
+plt.ylabel('Hours-per-week')
+plt.savefig('scatter_plot.png')
+print("Scatter plot saved as scatter_plot.png")
