@@ -30,5 +30,13 @@ cols_to_ohe = ['workclass', 'marital-status', 'occupation', 'relationship', 'rac
 df = pd.get_dummies(df, columns=cols_to_ohe, drop_first=True)
 # ENCODING END
 
+# OUTLIER REMOVAL START
+iqr_cols = ['age', 'fnlwgt', 'hours-per-week']
+Q1 = df[iqr_cols].quantile(0.25)
+Q3 = df[iqr_cols].quantile(0.75)
+IQR = Q3 - Q1
+df = df[~((df[iqr_cols] < (Q1 - 1.5 * IQR)) | (df[iqr_cols] > (Q3 + 1.5 * IQR))).any(axis=1)]
+# OUTLIER REMOVAL END
+
 print(f"Shape: {df.shape}")
 print(df.head())
