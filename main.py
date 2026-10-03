@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 df = pd.read_csv('adult_merged.csv')
@@ -52,4 +53,23 @@ plt.title('Age vs Hours-per-week (After Outlier Removal)')
 plt.xlabel('Age')
 plt.ylabel('Hours-per-week')
 plt.savefig('scatter_plot.png')
+plt.close()
 print("Scatter plot saved as scatter_plot.png")
+
+# CORRELATION START
+corr_matrix = df.corr()
+
+plt.figure(figsize=(12, 10))
+sns.heatmap(corr_matrix, annot=False, cmap='coolwarm', vmin=-1, vmax=1)
+plt.title('Feature Correlation Heatmap')
+plt.savefig('correlation_heatmap.png')
+plt.close()
+print("Heatmap saved as correlation_heatmap.png")
+
+upper_tri = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+to_drop = [column for column in upper_tri.columns if any(upper_tri[column].abs() > 0.8)]
+df = df.drop(columns=to_drop)
+
+print(f"Dropped highly correlated features: {to_drop}")
+print(f"Final shape: {df.shape}")
+# CORRELATION END
