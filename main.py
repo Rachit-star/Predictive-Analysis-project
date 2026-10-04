@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+import joblib
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import classification_report, confusion_matrix
 
 df = pd.read_csv('adult_merged.csv')
 
@@ -86,3 +90,48 @@ df = df.drop(columns=to_drop)
 print(f"Dropped highly correlated features: {to_drop}")
 print(f"Final shape: {df.shape}")
 # CORRELATION END
+
+# MODEL TRAINING START
+# Using a Pipeline as requested, and class_weight='balanced' for the 75/25 class imbalance!
+pipeline = Pipeline([
+    ('model', LogisticRegression(max_iter=1000, class_weight='balanced', random_state=42))
+])
+pipeline.fit(X_train, y_train)
+
+y_pred = pipeline.predict(X_test)
+
+print("\n--- Logistic Regression (Pipeline) Model Evaluation ---")
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+# MODEL TRAINING END
+
+# PREDICTING ON A COMPLETELY CUSTOM INPUT
+print("\n--- Testing a Completely Custom Input ---")
+# 1. Create a blank dataframe with the exact same 43 columns as our training data (filled with 0s)
+custom_data = pd.DataFrame(0, index=[0], columns=X_train.columns)
+
+# 2. Customize our completely fake person
+# (Note: Numerical values like age are standardized, so 0.5 means slightly above average)
+custom_data['age'] = 0.5 
+custom_data['hours-per-week'] = 1.2
+custom_data['education-num'] = 1.5
+custom_data['sex'] = 1  
+custom_data['capital-gain'] = 2.0  
+custom_data['workclass_ Private'] = 1 
+custom_data['marital-status_ Married-civ-spouse'] = 1 
+
+# 3. Predict!
+prediction = pipeline.predict(custom_data)
+pred_label = ">50K" if prediction[0] == 1 else "<=50K"
+
+print("Custom Person Profile:")
+print("- Above average age, education, and hours-per-week")
+print("- Male, Private Sector, Married")
+print("- High Capital Gain")
+print(f"\n---> Model Prediction for this custom person: {pred_label}")
+
+# SAVE MODEL
+joblib.dump(pipeline, 'model.pkl')
+print("\nModel saved successfully as 'model.pkl'!")
